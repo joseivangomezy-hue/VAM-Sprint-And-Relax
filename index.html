@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora VAM</title>
+    <!-- Tailwind CSS para el diseño -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen p-4 md:p-8">
+    <div id="root" class="max-w-4xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-blue-700">Calculadora de VAM</h1>
+            <p class="text-slate-500 mt-2">Calcula tus ritmos y pasos por 100m</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Configuración -->
+            <div class="lg:col-span-1 space-y-4">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Distancia (m)</label>
+                    <input type="number" id="dist" value="2000" class="w-full p-2 border rounded-lg mb-4 outline-none focus:ring-2 focus:ring-blue-500">
+                    
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Tiempo (Min:Seg)</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="mins" value="7" class="w-1/2 p-2 border rounded-lg text-center">
+                        <input type="number" id="secs" value="30" class="w-1/2 p-2 border rounded-lg text-center">
+                    </div>
+                    
+                    <button onclick="calculate()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl mt-6">Calcular Ritmos</button>
+                </div>
+
+                <div id="vam-display" class="hidden bg-blue-600 p-6 rounded-2xl text-white shadow-lg">
+                    <p class="text-blue-100 text-sm uppercase tracking-wider">Tu VAM estimada</p>
+                    <div class="text-5xl font-black my-1"><span id="vam-value">0</span> <span class="text-xl font-light">km/h</span></div>
+                </div>
+            </div>
+
+            <!-- Tabla -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+                            <tr>
+                                <th class="px-4 py-4">% VAM</th>
+                                <th class="px-4 py-4">Paso km</th>
+                                <th class="px-4 py-4 text-blue-600">Cada 100m</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-body" class="divide-y divide-slate-100">
+                            <!-- Los resultados se cargan aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            const d = document.getElementById('dist').value;
+            const m = document.getElementById('mins').value;
+            const s = document.getElementById('secs').value;
+            const totalSecs = (parseInt(m) * 60) + parseInt(s);
+            
+            if (totalSecs <= 0) return;
+
+            const vam = (d / totalSecs) * 3.6;
+            document.getElementById('vam-value').innerText = vam.toFixed(2);
+            document.getElementById('vam-display').classList.remove('hidden');
+
+            const percentages = [60, 70, 80, 85, 90, 95, 100, 105, 110];
+            const tbody = document.getElementById('results-body');
+            tbody.innerHTML = '';
+
+            percentages.forEach(pct => {
+                const speed = vam * (pct / 100);
+                const paceDec = 60 / speed;
+                const pM = Math.floor(paceDec);
+                const pS = Math.round((paceDec - pM) * 60);
+                const sec100 = (360 / speed).toFixed(1);
+
+                const row = `
+                    <tr class="hover:bg-blue-50">
+                        <td class="px-4 py-4 font-bold">${pct}%</td>
+                        <td class="px-4 py-4">${pM}:${pS < 10 ? '0' : ''}${pS}/km</td>
+                        <td class="px-4 py-4 text-blue-600 font-bold">${sec100}"</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+        // Calcular al iniciar
+        calculate();
+    </script>
+</body>
+</html>
